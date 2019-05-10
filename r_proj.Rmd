@@ -1,0 +1,634 @@
+---
+title: "Exploratory Data Analysis in R"
+author: "Author:Pasquale Salomone"
+date: "December  2018"
+output: html_document
+---
+
+```{r echo=FALSE, warning= FALSE, message=FALSE}
+
+# Clear environment
+
+rm(list = ls())
+
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+```
+
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(DAAG)
+library(AlgDesign)
+library(funModeling)
+library(FrF2 )
+library(MASS)
+library(caret)
+
+library(mlbench)
+library(ggpubr)
+library(ggplot2)
+library(corrplot)
+library(knitr)
+library(tidyverse)
+library(reshape)
+library(memisc)
+library(kknn)
+library(magrittr)
+library(kableExtra)
+library(DataExplorer)
+library(psycho)
+library(GGally)
+library(gridExtra)
+library(outliers)
+library(e1071)
+library(tree)
+library(randomForest)
+library(rpart)
+library(rpart.plot)
+library(tidyverse)
+library(caret)
+library(glmnet)
+library(leaps)
+library(AmesHousing)
+```
+
+##### Exploring the data set
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+students_data <- read.csv('StudentsPerformance.csv')
+male_data <- subset(students_data,gender=='male')
+female_data <- subset(students_data,gender=='female')
+str(students_data)
+
+```
+
+
+```{r echo=F, warning=F, message=F}
+summary(students_data)
+```
+
+
+<p>The summary above doesn't show the presence of missing/incorrect values.</p>
+
+```{r echo=F,warning=F,message=F}
+plot_missing(students_data)
+```
+
+<p><i>A visual analysis confirms the absence of missing values.</i></p>
+--- 
+
+<P style="page-break-before: always">
+
+#### <u>Univariate Plot Section</u>
+
+
+```{r echo=F, warning=F, message=F}
+hist(students_data$math.score,xlab='math.score',col='gray',breaks=seq(0,100,5),main='Math grades distribution')
+
+```
+
+
+```{r echo=F, warning=F, message=F}
+hist(students_data$writing.score,xlab='writing.score',col='gray',breaks=seq(0,100,5),main='Writing grades distribution')
+
+```
+
+
+```{r echo=F, warning=F, message=F}
+hist(students_data$reading.score,xlab='reading.score',col='gray',breaks=seq(0,100,5),main='Reading grades distribution')
+```
+
+<p><i>The histograms above display the distribution of math, writing, and reading scores. Math, writing, and reading scores all appear to follow an almost normal distribution; there is a slight left skew possibly due to the presence of outliers.</i></p>
+
+
+--- 
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+pie(table(students_data$race.ethnicity),  col=grey.colors(5), main="Race Ethinicity Groups",label=paste(prop.table(table(students_data$race.ethnicity))*100, "%") ) 
+legend("right",legend=levels(as.factor(students_data$race.ethnicity)), fill=grey.colors(5), title="Ethnicity Groups")
+```
+
+<p><i> The pie chart displays the percentage of ethnicity groups. The data set does not provide an explanation for the  ethnicity groups coding.</i></p>
+
+---
+
+```{r echo=F,warning=F,message=F}
+#barchart(x=sort(round(prop.table(cross),2)), col=grey.colors(6), main='Parents Level of Education')
+barchart(x=sort(round(prop.table(table(students_data$gender)),2)),col=grey.colors(2), main='Students Gender')
+
+```
+
+
+
+
+<p><i> The plot shows the percentage of female students in the data set is slightly greater than male students.</i></p>
+
+---
+
+
+```{r echo=F,warning=F,message=F}
+cross<-table(students_data$parental.level.of.education)
+#round(prop.table(cross),2)
+barchart(x=sort(round(prop.table(cross),2)), col=grey.colors(6), main='Parents Level of Education')
+
+```
+
+
+<p> <i>The plot shows that master level education is the least common among parents.</i></p>
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(students_data,aes(x=test.preparation.course))+
+  geom_bar(alpha=0.7,width=0.3,fill=grey.colors(2))+
+  labs(title='Test Preparation Course Count',x='Test Preparation Course',y='Count')+
+  theme_light()+
+  theme(plot.title = element_text(hjust = 0.5,face='italic'),axis.text.x=element_text(angle=45,hjust=1))
+  
+   
+```
+
+<p><i> The plot shows that the count of students who did not complete a test preparation course is greater than students who did.</i></p>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(students_data,aes(x=lunch))+
+  geom_bar(alpha=0.7,width=0.3,fill=grey.colors(2))+
+  labs(title='Plot Type of Lunch Count',x='Lunch Type',y='Count')+
+  theme_light()+
+  theme(plot.title = element_text(hjust = 0.5,face='italic'),axis.text.x=element_text(angle=45,hjust=1))
+   
+```
+
+<p><i>The plot shows most students did not qualify for a free/reduced lunch type.</i></p>
+
+---
+
+#### <u>Outliers analysis</u>
+
+
+```{r  echo=FALSE, message=FALSE, warning=FALSE}
+p1 <- ggplot(students_data,aes(x=" ",y=math.score))+
+        stat_boxplot(geom='errorbar')+
+        geom_boxplot(outlier.colour="black", outlier.shape=16,
+             outlier.size=2, notch=FALSE,fill='light gray')+
+        stat_summary(fun.y=mean, geom="point", color='red',shape=8, size=4)
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+p2 <-ggplot(students_data,aes(x=" ",y=writing.score))+
+        stat_boxplot(geom='errorbar')+
+        geom_boxplot(outlier.colour="black", outlier.shape=16,
+             outlier.size=2, notch=FALSE,fill='light gray')+
+        stat_summary(fun.y=mean, geom="point", color='red',shape=8, size=4)
+```
+
+```{r  echo=FALSE, message=FALSE, warning=FALSE}
+p3 <-ggplot(students_data,aes(x=" ",y=reading.score))+
+        stat_boxplot(geom='errorbar')+
+        geom_boxplot(outlier.colour="black", outlier.shape=16,
+             outlier.size=2, notch=FALSE,fill='light gray')+
+        stat_summary(fun.y=mean, geom="point", color='red',shape=8, size=4)
+        
+```
+
+----
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+grid.arrange(p1,p2,p3,ncol=3)
+```
+<p> <i>All grading scores present outliers. Outliers can drastically bias/change the fit estimates and predictions.For a given continuous variable, outliers are those observations that lie outside 1.5*IQR, where IQR, the 'Inter Quartile Range' is the difference between 75th and 25th quartiles. We can see outliers as the points outside the whiskers in the box plot. Also, mean values are displayed with a red asterisk.</i></p>
+
+---
+
+#### <u>Univariate analysis</u>
+
+<p> The data set has 1000 observation with 8 features. There are no missing values in the data set.</p>
+<p> The ordered factor variables have the following orders:</p>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#rapply(students_data, class = "factor", f = levels, how = 'list')
+Filter(Negate(is.null),rapply(students_data, class = "factor", f = levels, how = 'list'))
+```
+
+<ul><i>Other observations:</i>
+<p></p>
+<li>In  all three variables the mean and median are the same or very close which confirms that they are normally distributed</i> 
+<li>About 52% of the students in the data-sets are female and 48% are males </li>
+<li>There are 5 ethnicity group in the data set</li>
+<li>About 36% of students completed a test preparation course while 64% did not complete one. </li>
+<li>The highest level of parental education is "some college"</li>
+</ul>
+
+
+##### <b>What is/are the main feature(s) of interest in your dataset?</b>
+<p> <i>The main features in data set are the grading scores. The analysis tries to determine if there is a correlation among grading scores.</i></p>
+
+##### <b>What other features in the dataset do you think will help support your investigation into your feature(s) of interest?</b>
+<p> <i>To investigate if gender and test.preparation.course features weaken or strengthen reading.score vs writing.score correlation.</i></p>
+
+##### <b>Did you create any new variables from existing variables in the dataset?</b>
+<p> <i>Categorical variables were converted to dummy variables using the dummies library.</i></p>
+
+##### <b>Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?</b>
+
+<p><i>The data set was downloaded from https://www.kaggle.com/spscientist/students-performance-in-exams. No operations were performed to tidy the data set.</i></p>
+
+---
+
+#### <u>Bivariate Plots Section</u>
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggpairs(students_data[,c(6,7,8)],title='Correlation Plot')+
+  theme(plot.title = element_text(hjust=0.5,face='italic'),axis.text.x=element_text(angle=45,hjust=1),axis.text.y=element_text(angle=45,hjust=1))
+```
+
+<p><i> The plot above shows the correlation among the variables of interest.</i></p>
+
+
+```{r echo=F, warning=F, message= F}
+scatter_plt <- ggscatter(students_data, x = "reading.score", y = "math.score",
+   add = "reg.line",  # Add regressin line
+   add.params = list(color = "red", fill = "lightgray"), # Customize reg. line
+   conf.int = F)
+
+# Add correlation coefficient
+scatter_plt + stat_cor(method = "pearson", label.x = 25, label.y = 100)
+
+```
+
+```{r echo=F, warning=F, message= F}
+scatter_plt <- ggscatter(students_data, x = "reading.score", y = "writing.score",
+   add = "reg.line",  # Add regressin line
+   add.params = list(color = "red", fill = "lightgray"), # Customize reg. line
+   conf.int = F)
+
+# Add correlation coefficient
+scatter_plt + stat_cor(method = "pearson", label.x = 25, label.y = 100)
+
+```
+
+<p><i> The scatter plots above show the correlation between math.score and reading.score and writing.score and reading.score.</i> </p>
+---
+
+
+#### <u>Bivariate Analysis</u>
+
+##### <b> Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?</b>
+<p><i>Correlation is a statistical measure that suggests the level of linear dependence between two variables, that occur in pair. Correlation can take values between -1 to +1.The grading score variables are all positively and strongly correlated as shown in the correlation table. </i></p>
+
+##### <b>Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?</b>
+
+<p><i>Gender and test.preparation.course features were analyzed for possible relationship but nothing significant was observed.</i></p>
+Female Test Preparation Rates :
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+prop.table(table(female_data$test.preparation.course))
+```
+Male Test Preparation Rates :
+```{r echo=F,warning=F,message=F}
+prop.table(table(male_data$test.preparation.course))
+```
+
+
+##### <b>What was the strongest relationship you found? </b>
+<p> <i>The reading score is strongly correlated with the writing.score with a correlation coefficient of 0.95 </i></p>
+
+<p>Correlation Table: </p>
+```{r echo=F, warning=F, message=F}
+round(cor(students_data[c('math.score','writing.score','reading.score')]),2)
+```
+
+---
+
+#### <u>Multivariate Plots Section </u>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(students_data,
+  aes(writing.score, reading.score))+
+  geom_point(alpha=0.3)+
+  facet_wrap(~test.preparation.course)+
+   stat_cor(method = "pearson", label.x = 25, label.y = 100)
+  
+```
+
+<p><i>Scatter plots to investigate the reading score by writing.score and test.preparation.course to see if a third variable has any impact on the features of interest correlation.</i></p>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(students_data,aes(x=reading.score,y=math.score))+
+  geom_point(position='jitter',alpha=0.3)+
+  facet_wrap(~gender)+
+   stat_cor(method = "pearson", label.x = 25, label.y = 100)
+  
+   
+```
+<p><i> Scatter plots to investigate the math.score by reading.score and gender to see if a third variable has any impact on the features of interest correlation.</i></p>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(students_data,aes(x=writing.score,y=math.score))+
+  geom_point(position='jitter',alpha=0.3)+
+  facet_wrap(~gender)+
+   stat_cor(method = "pearson", label.x = 25, label.y = 100)
+  
+   
+```
+<p> <i>Scatter plots to investigate the math.score by writing.score and gender to see if a third variable has any impact on the features of interest correlation.</i></p>
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(students_data,aes(x=reading.score,y=math.score))+
+  geom_point(position='jitter',alpha=0.3)+
+  facet_wrap(~parental.level.of.education)+
+   stat_cor(method = "pearson", label.x = 25, label.y = 100)
+  
+   
+```
+<p> <i>Scatter plots to investigate the math.score by reading.score and parental.level.of.education to see if a third variable has any impact on the features of interest correlation.</i></p>
+
+
+---
+
+#### <u>Multivariate Analysis</u>
+
+
+##### <b>Creating Dummy Variables and avoiding Trap in Regression Models</b>
+```{r echo=T, warning=F, message=F}
+library(dummies)
+new_data <- dummy.data.frame(students_data)
+new_data <- select(new_data,-c(1,3,8,14,16)) # removing m-1 in the dataframe (m number of categories)
+```
+<p><i>The Dummy Variable trap is a scenario in which the independent variables are multicollinear - a scenario in which two or more variables are highly correlated; in simple terms one variable can be predicted from the others. The solution to the dummy variable trap is to drop one of the categorical variables (or alternatively, drop the intercept constant) - if there are m number of categories, use m-1 in the model, the value left out can be thought of as the reference value and the fit values of the remaining categories represent the change from this reference.</i></p>
+---
+
+##### <b>Creating a training and testing data set.</b>
+
+```{r echo=T, warning=F,message=F}
+#loading package
+library(caTools)
+
+#use caTools function to split, SplitRatio for 70%:30% splitting
+data1= sample.split(new_data,SplitRatio = 0.3)
+
+#subsetting into Train data
+train =subset(new_data, data1==TRUE)
+
+#subsetting into Test data
+test =subset(new_data,data1==FALSE)
+
+```
+
+---
+
+##### <b>Creating a first linear model which includes higly correlated predictors.</b>
+
+```{r echo=F, warning=F, message=F}
+set.seed(18) # to reproduce the same results
+model_1 <- lm(math.score ~., train)
+predictions <- model_1 %>% predict(test)
+data.frame(
+  RMSE = RMSE(predictions, test$math.score),
+  R2 = R2(predictions, test$math.score)
+)
+
+
+```
+
+<i>The table above assess model_1 performance metrics.</i> 
+
+---
+
+##### <b>Using R function vif() to detect multicollinearity in a regression model_1.</b>
+
+```{r echo=F,warning=F,message=F}
+car::vif(model_1)
+```
+
+<p><i>The VIF score for the predictor variable reading.score and writing.score are very high (VIF = 12.72, 14.69) which may be problematic. 
+
+In multiple regression two or more predictor variables might be correlated with each other. This situation is referred as collinearity. There is an extreme situation, called multicollinearity, where collinearity exists between three or more variables even if no pair of variables has a particularly high correlation. This means that there is redundancy between predictor variables. In the presence of multicollinearity, the solution of the regression model becomes unstable. For a given predictor (p), multicollinearity can assessed by computing a score called the variance inflation factor (or VIF), which measures how much the variance of a regression coefficient is inflated due to multicollinearity in the model.
+
+The smallest possible value of VIF is one (absence of multicollinearity). As a rule of thumb, a VIF value that exceeds 5 or 10 indicates a problematic amount of collinearity. When faced to multicollinearity, the concerned variables should be removed, since the presence of multicollinearity implies that the information that this variable provides about the response is redundant in the presence of the other variables (James et al. 2014,P. Bruce and Bruce (2017)).</i></p>
+
+---
+
+##### <b>Creating a second linear model which has removed reading.score.</b>
+```{r echo=F, warning=F, message=F}
+set.seed(128) # to reproduce the same results
+model_2 <- lm(math.score ~.-writing.score, train)
+predictions <- model_2 %>% predict(test)
+data.frame(
+  RMSE = RMSE(predictions, test$math.score),
+  R2 = R2(predictions, test$math.score)
+)
+```
+
+<i>The table above assess model_2 performance metrics.</i>
+
+##### <b>Using R function vif() to detect multicollinearity in a regression model_2.</b>
+```{r echo=F,warning=F,message=F}
+car::vif(model_2)
+```
+
+<i>The analysis of VIF scores doesn't present any highly correlated predictor variable.</i>
+
+---
+
+##### <b>Using both linear models to predict math.score based on all predictors.</b>
+
+```{r echo=F, warning=F, message=F}
+test_point <- data.frame('gendermale'=1,
+                            "race.ethnicitygroup B"=0,
+                            "race.ethnicitygroup C" =1,
+                            "race.ethnicitygroup D" =0,
+                            "race.ethnicitygroup E" =1,
+                            "parental.level.of.educationbachelor's degree"=1,
+                            "parental.level.of.educationhigh school"=0,
+                            "parental.level.of.educationmaster's degree"=1,
+                            "parental.level.of.educationsome college"=1,
+                            "parental.level.of.educationsome high school"=0,
+                            "lunchstandard"=0,
+                            "test.preparation.coursenone" =1,
+                            "reading.score"=c(90),
+                            "writing.score"=c(80),
+                             check.names = FALSE)
+
+
+predictions_1 <- model_1 %>% predict(test_point)
+predictions_2<-model_2  %>% predict(test_point)
+model_predictions <- data.frame( 'Model' = c('Model_1','Model_2'),
+                                 'Model Predicted Math Score' =c(predictions_1,predictions_2),check.names=F)
+
+kable(model_predictions) %>%
+  kable_styling(bootstrap_options = 'striped', 
+  full_width = F, position = "left",
+  font_size = 14)
+
+```
+
+---
+
+##### <b>Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?</b>
+<p><i> Stratifying the correlation by a third variable such as gender resulted in a slightly better correlation coefficients for the female gender; stratification by test preparation course resulted in a slightly better correlation coefficient for students who did not take a test preparation course. This is only a descriptive report which may be the result of data set real and random effects. Further statistical analysis would be needed to make any inference.</i></p>
+
+##### <b>Were there any interesting or surprising interactions between features?</b>
+<p><i>Stratifying the correlation by a third variable such as parental.level.of.education resulted in a higher correlation coefficient for the variables of interest(reading.score, math.score) for master's degree parental level of education .</i></p>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+students_data %>%
+  group_by(parental.level.of.education) %>%
+  summarize(cor = round(cor(x=reading.score,y=math.score),2))
+```
+##### <b>Did you create any models with your dataset? Discuss the strengths and limitations of your model.</b>
+<p><i> Two linear models were created to predict a math scores; model_1 had slightly better performance metrics due to multicollinearity. Model_2 removed the writing.score variable to address co-variance and model performance metrics were not much affected.</i></p>
+
+---
+
+#### <u>Final Plots and Summary</u>
+
+##### <b>Plot one</b>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(ggthemes)
+barfill <- "#4271AE"
+barlines <- "#1F3552"
+plot_1 <-ggplot(students_data, aes(x = math.score)) +
+        geom_histogram(aes(y = ..density..),bins=30,colour = barlines, fill = barfill) +
+        stat_function(fun = dnorm, colour = "red",
+                      args = list(mean = mean(students_data$math.score, na.rm = TRUE),
+                                 sd = sd(students_data$math.score, na.rm = TRUE)))+
+  labs(x='Math Scores',y='Density')+
+  ggtitle("Histogram of Math Scores") +
+        theme_economist() +
+        theme(plot.title = element_text(family="Italic",hjust=0.5,size=14),
+              text = element_text(family = "Italic"),
+              axis.title = element_text(size = 12))
+              
+plot_2 <-ggplot(students_data, aes(x = reading.score)) +
+        geom_histogram(aes(y = ..density..),bins=30,colour = barlines, fill = barfill) +
+        stat_function(fun = dnorm, colour = "red",
+                      args = list(mean = mean(students_data$reading.score, na.rm = TRUE),
+                                 sd = sd(students_data$reading.score, na.rm = TRUE)))+
+  labs(x='Reading Scores',y='Density')+
+  ggtitle("Histogram of Reading Scores") +
+        theme_economist() +
+        theme(plot.title = element_text(family="Italic",hjust=0.5,size=14),
+              text = element_text(family = "Italic"),
+              axis.title = element_text(size = 12))
+
+
+plot_3 <-ggplot(students_data, aes(x = writing.score)) +
+        geom_histogram(aes(y = ..density..),bins=30,colour = barlines, fill = barfill) +
+        stat_function(fun = dnorm, colour = "red",
+                      args = list(mean = mean(students_data$writing.score, na.rm = TRUE),
+                                 sd = sd(students_data$writing.score, na.rm = TRUE)))+
+  labs(x='Writing Scores',y='Density')+
+  ggtitle("Histogram of Writing Scores") +
+        theme_economist() +
+        theme(plot.title = element_text(family="Italic",hjust=0.5,size=14),
+              text = element_text(family = "Italic"),
+              axis.title = element_text(size = 12))
+
+
+
+              
+```
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+grid.arrange(plot_1,plot_2,plot_3,nrow=3)
+```
+
+
+<p><i> We overlay a normal density function curve on top of our histogram to see how closely (or not) it fits a normal distribution.</i> </p>
+
+#### <b>Plot Two</b>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+ggplot(students_data,aes(x=reading.score,y=writing.score))+
+  geom_point(alpha = 0.3, size = 1, position = 'jitter')+
+  geom_smooth(method=lm,color='red',se=FALSE)+
+  labs(x='Reading Score',y='Writing Score')+
+  ggtitle('Writing Score vs Reading Score')+
+  theme_wsj()+
+   theme(plot.title = element_text(hjust=0.5,size=15),
+              axis.title = element_text(size = 12))+
+   stat_cor(method = "pearson", label.x = 25, label.y = 90)
+```
+
+<p><i> The plot indicates that of the variable of interests writing.score and reading.score display the strongest correlation.Used jitter to lower the impact of over plotting and a lower alpha coefficient.</i></p>
+
+
+
+
+#### <b>Plot Three</b>
+
+```{r echo=FALSE, message=FALSE, warning=FALSE }
+ggplot(students_data,
+  aes(writing.score, reading.score))+
+  scale_x_continuous(limits=c(25,100),breaks = seq(25,100,30))+
+  scale_y_continuous(limits=c(35,100),breaks=seq(35,100,30))+
+  geom_point(aes(shape=gender, color=gender),alpha=0.3,position='jitter')+
+  labs(x='Writing Score',y='Reading Score')+
+  ggtitle('Reading Score by Writing Score and Gender')+
+  theme(plot.title = element_text(hjust=0.5,size=15),
+              axis.title = element_text(size = 12))+
+  facet_wrap(~gender)+
+   stat_cor(method = "pearson", label.x = 25, label.y = 100)
+    
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE,fig1, fig.width = 8.5}
+ggplot(students_data,
+  aes(writing.score, reading.score))+
+  scale_x_continuous(limits=c(25,100),breaks = seq(25,100,30))+
+  scale_y_continuous(limits=c(40,100),breaks=seq(40,100,30))+
+  geom_point(aes(shape=test.preparation.course, color=test.preparation.course),alpha=0.3,position='jitter')+
+  labs(x='Writing Score',y='Reading Score')+
+  ggtitle('Reading Score by Writing Score and Test Preparation Course')+
+  theme(plot.title = element_text(hjust=0.5,size=15),
+              axis.title = element_text(size = 12))+
+  facet_wrap(~test.preparation.course)+
+   stat_cor(method = "pearson", label.x = 25, label.y = 100)
+    
+```
+
+
+<p><i>Plots created with scale_x_continuous and scale_y_continuous to zoom in on the distributions.The plots suggest that gender and test preparation do not significantly strengthen/weaken the reading.score vs writing.score correlation.</i></p>
+
+#### <u> Summary</u>
+<p><i>The students performances data set contains information on 1000 data points across 8 variables. The analysis started with understanding the individual variables in the data set, and then proceeded to a bi-variate and multivariate analysis. Eventually, two linear models with math.score as the dependent variable were created; the first model included all predictors. The second model did not include the reading.score predictor.Multicollinearity was assessed by computing variance inflation factor (VIF) score. Both models included predictors such as gender and race ethnicity which may not be used in certain countries due to legal constrains. Also, in a large data set presenting multiple correlated predictor variables, you can perform principal component regression and partial least square regression strategies.
+
+There was a strong correlation between reading.score and writing.score.A third level variable was added to the analysis;however but both gender and test preparation course did not have a significant impact on reading.score vs writing.score.
+
+Some limitations of this model include the source of the data which was downloaded from kaggle.com. It is not known how the data was collected. Furthermore, we don't know how representative is the sample. The author of the data set doesn't provide any coding for the ethnicity groups. </i></p>
+
+
+##### <u>References</u>
+
+<ul>
+<li>http://www.sthda.com/english/articles/40-regression-analysis/166-predict-in-r-model-predictions-and-confidence-intervals/</li>
+<li>https://www.algosome.com/articles/dummy-variable-trap-regression.html</li>
+<li>http://www.sthda.com/english/articles/39-regression-model-diagnostics/160-multicollinearity-essentials-and-vif-in-r/</li>
+
+
+
+
+
+
+
+
+
+
+
+
