@@ -10,7 +10,8 @@ Exploratory Data Analysis (EDA) is an approach/philosophy for data analysis that
     <li>determine optimal factor settings</li></ol>
 This project uses R to analyze the students performance data-set downloaded from  https://www.kaggle.com/spscientist/students-performance-in-exams. The analysis starts with understanding the individual variables in the data set, and then proceeded to a bi-variate and multivariate analysis. Eventually, two linear models with math.score as the dependent variable were created; the first model included all predictors. 
 
-The following libraries were used in this project:
+The following is a list of libraries were used in this project:
+<ul>
 <li>DAAG</li>
 <li>MASS</li>
 <li>caret</li>
@@ -28,5 +29,5 @@ The following libraries were used in this project:
 <li>gridExtra</li>
 <li>tidyverse</li>
 <li>caret</li>
-<li>glmnet</li>
+<li>glmnet</li></ul>
 
