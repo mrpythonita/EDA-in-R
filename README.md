@@ -1,33 +1,50 @@
-# Exploratory Data Analysis in R
-Exploratory Data Analysis (EDA) is an approach/philosophy for data analysis that employs a variety of techniques (mostly graphical) to:
-<ol>
-  <li>  maximize insight into a data set</li>
-    <li>uncover underlying structure</li>
-   <li> extract important variables</li>
-   <li> detect outliers and anomalies</li>
-    <li>test underlying assumptions</li>
-    <li>develop parsimonious models</li>
-    <li>determine optimal factor settings</li></ol>
-This project uses R to analyze the students performance data-set downloaded from  https://www.kaggle.com/spscientist/students-performance-in-exams. The analysis starts with understanding the individual variables in the data set, and then proceeded to a bi-variate and multivariate analysis. Eventually, two linear models with math.score as the dependent variable were created; the first model included all predictors. 
+# Project: Exploratory Data Analysis (EDA) in R
+-------------------------
+## Introduction 
 
-The following is a list of libraries were used in this project:
-<ul>
-<li>DAAG</li>
-<li>MASS</li>
-<li>caret</li>
-<li>ggpubr</li>
-<li>ggplot2</li>
-<li>corrplot</li>
-<li>knitr</li>
-<li>tidyverse</li>
-<li>reshape</li>
-<li>memisc</li>
-<li>magrittr</li>
-<li>kableExtra</li>
-<li>DataExplorer</li>
-<li>GGally</li>
-<li>gridExtra</li>
-<li>tidyverse</li>
-<li>caret</li>
-<li>glmnet</li></ul>
+This project focuses on performing Exploratory Data Analysis (EDA) on a data-set. EDA is an approach/philosophy for data analysis that employs a variety of techniques (mostly graphical) to:
 
+* __maximize insight into a data-set__
+* __uncover underlying structure__
+* __extract important variables__
+* __detect outliers and anomalies__
+* __test underlying assumptions__
+* __develop parsimonious models__
+* __determine optimal factor settings__
+
+## Getting Started
+
+There is one dataset, student performance, downloaded from  https://www.kaggle.com/spscientist/students-performance-in-exams. The analysis starts with understanding the individual variables in the data-set, and ultimately proceeded to a bi-variate and multivariate analysis. 
+
+## Prerequisites
+
+R is the environment utilized with the addition of the following libraries:
+
+* __DAAG__
+* __MASS__
+* __caret__
+* __ggpubr__
+* __ggplot2__
+* __corrplot__
+* __knitr__
+* __tidyverse__
+* __reshape__
+* __memisc__
+* __magrittr__
+* __kableExtra__
+* __DataExplorer__
+* __GGally__
+* __gridExtra__
+* __tidyverse__
+* __caret__
+* __glmnet__
+
+## Deployment
+
+* **r_proj.Rmd**:  RMD file created using RStudio, an open-source Integrated Development Environment (IDE) for the R programming language.
+
+
+
+## _Acknowledgments_
+
+* Chapeau to StackOverflow and GitHub for providing some guidance code.
